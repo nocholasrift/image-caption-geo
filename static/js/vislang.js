@@ -202,6 +202,7 @@ $(document).ready(function(){
 		// if(xhr && xhr.readyState != 4){ xhr.abort(); e.preventDefault(); return false;}
 
 		$('.geoparsepy-spinner').show();
+		document.getElementById("geoparse-link-result").innerHTML="";
 
 		image_caption = $("#text-input").val()
 
@@ -231,8 +232,12 @@ $(document).ready(function(){
 		$('.geoparsepy-spinner').hide();
 		if(response != 0){
 			console.log("Loading up response now");
-			document.getElementById("geoparse-link-result").innerHTML='Text was parsed: '+response;
-        	window.open(response['geolink']);
+			document.getElementById("geoparse-link-result").innerHTML='Text was parsed: <a href="'+response['geolink']+'">'+response['geolink']+'</a>';
+			for (let k in response){
+				if (k == "geolink") 	continue;
+				document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response[k]+'</li>';
+			}
+        	// window.open(response['geolink']);
 
         }
 	}

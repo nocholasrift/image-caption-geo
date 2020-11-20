@@ -3,6 +3,9 @@
 '''
 import random, io, time
 import requests as http_requests
+import xml.etree.ElementTree as ET 
+
+from collections import defaultdict
 
 from flask import Flask, request, redirect, flash, url_for
 from flask import render_template
@@ -194,9 +197,32 @@ def simple_demo():
 				logger.info( 'Disambiguated Location [index ' + str(nMatchIndex) + ' osmid ' + repr(tupleOSMID) + ' @ ' + str(nTokenStart) + ' : ' + str(nTokenEnd) + '] = ' + strNameList + ' : ' + strOSMURI )
 				if nMatchIndex == 0:
 					geolink=strOSMURI
+	
+	tags = get_tags(geolink)
+	tags['geolink'] = geolink
+	print(tags)
+
+	return tags
 
 
-	return {'geolink': geolink}
+def get_tags(url):
+	tags= defaultdict(list)
+
+	relation_id = url[url.rfind("/")+1:]
+	xml_url = 'https://www.openstreetmap.org/api/0.6/relation/'+relation_id
+	r = http_requests.get(xml_url)
+
+	with open('metadata.xml', 'wb') as f:
+		f.write(r.content)
+
+	xml_tree = ET.parse('metadata.xml')
+	root = xml_tree.getroot()
+
+	for elem in root.findall('./relation/tag'):
+		# print(elem.attrib)
+		tags[elem.attrib['k']]=elem.attrib['v']
+
+	return tags
 
 # def simple_demo():
 
