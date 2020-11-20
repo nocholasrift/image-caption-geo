@@ -1,0 +1,110 @@
+<!--doctype html-->
+<html lang="en">
+<head>
+  {% include 'page-includes.html' %}
+</head>
+<body>
+
+<div class="container blank-container">
+
+	<header class="website-header">
+     {% include 'header.html' %}
+  </header>
+
+      <main role="main">
+        <div class="jumbotron p-4 bg-light border mx-0 mx-md-4">
+          <div class="col-sm-12 mx-auto">
+            <h3 class="text-primary m-0">COCO Captions Explorer</h3>
+            <p class="font-ninety-em d-none d-lg-block mt-2 mb-0">The <a href="http://cocodataset.org">COCO Dataset</a> contains more than 120,000 images with captions obtained from human annotators circa 2014 as documented in <a href="https://arxiv.org/abs/1504.00325">Chen et al 2015</a>. These captions are relatively clean and uniform as annotators were carefully instructed and paid to write such captions. This dataset is maintained by the Common Visual Data Foundation and this page only provides a tool to search the data by captions. This is just a search tool. If you are interested in downloading the dataset visit their official project page at <a href="http://cocodataset.org/">cocodataset.org</a>.</p>
+
+             <p class="font-ninety-em d-lg-none mt-2 mb-0">The <a href="http://cocodataset.org">COCO Dataset</a> contains more than 120,000 images with captions obtained from human annotators circa 2014 as documented in <a href="https://arxiv.org/abs/1504.00325">Chen et al 2015</a>. This dataset is maintained by the Common Visual Data Foundation. This is just a search tool.</p>
+
+          </div>
+        </div>
+
+        <div class="container mb-4">
+
+          <div class="container">
+
+            <div class="mx-auto d-flex justify-content-center">
+             <form action="" method="_get" class="m-0 p-0" id="coco-search-form">
+              
+                <div class="text-smaller text-center text-muted m-0 p-0">Try entering queries such as ``a person holding a cat'',  or ''a bird on top of a boat''.</div>
+
+                <div class="p-1 rounded rounded-lg bg-white shadow-sm border">
+                  <div class="input-group">
+                    <input type="search" name="query" value="{{query}}" placeholder="Enter here your query..." aria-describedby="button-addon1" class="form-control border-0">
+                    <div class="input-group-append">
+                      <button id="button-addon1" type="submit" class="btn btn-link text-primary"><i class="material-icons">search</i></button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-center mt-2">
+                  <div class="form-check form-check-inline m-0">
+                    <label class="m-0 p-2 btn text-smallest text-muted radio-inline" for="option1-train">
+                    <input class="form-check-input coco-search-radios" type="radio" name="split" id="option1-train" value="train" {{'checked' if split == "train"}}>
+                      Training Split 2017 [118,000 imgs]
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline m-0">
+                    <label class="m-0 p-2 btn text-smallest text-muted radio-inline" for="option2-val">
+                    <input class="form-check-input coco-search-radios" type="radio" name="split" id="option2-val" value="val" {{'checked' if split == "val"}}>
+                      Validation Split 2017 [5,000 imgs]
+                    </label>
+                  </div>
+                </div>
+
+              </form>
+            </div>
+          </div>
+
+          <div class="row mb-4 py-4 px-0 px-md-4">
+            <div class="col-12 border rounded-lg p-4">
+
+              {{pagination.render_navigation()|safe}}
+
+              <div class="row text-center text-lg-left">
+                
+                  {% for result in results %}
+
+                  <div class="col-lg-3 col-md-4 col-6 mb-4">
+                    <a href="http://images.cocodataset.org/{{split}}2017/{{result.image_id}}" class="d-blocks">
+                          <img class="img-fluid img-thumbnail" src="http://images.cocodataset.org/{{split}}2017/{{result.image_id}}" alt="{{result.caption}}"/>
+                        </a>
+                        <p class="text-muted px-2 text-smaller">
+                           {% for caption in result.caption %}
+                              <span>{{caption}}</span>
+                           {% endfor %}
+                        </p>
+                  </div>
+
+                  {% endfor %}
+
+                  {% if results|length < 1 %}
+                  <div class="col-12 mx-auto text-center p-12">
+                      No images match your query.
+                  </div>
+                  {% endif %}
+
+              </div>
+
+              {{pagination.render_navigation()|safe}}
+
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+</div>
+
+<footer class="page-footer">
+    {% include 'footer.html' %}
+</footer>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/vislang.js?v=3"></script>
+</body>
+</html>

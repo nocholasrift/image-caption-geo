@@ -1,0 +1,89 @@
+<!--doctype html-->
+<html lang="en">
+<head>
+  {% include 'page-includes.html' %}
+</head>
+<body>
+
+<div class="container blank-container">
+
+	<header class="website-header">
+     {% include 'header.html' %}
+  </header>
+
+      <main role="main">
+        <div class="jumbotron p-4 bg-light border mx-0 mx-md-4">
+          <div class="col-sm-12 mx-auto">
+            <h3 class="text-primary m-0">Geolocation Demo</h3>
+            <p class="font-ninety-em d-none d-lg-block mt-2 mb-0">
+              Here is our demo, it currently just takes in some text and passes it to geoparsepy.
+            </p>
+
+             <!-- <p class="font-ninety-em d-lg-none mt-2 mb-0">Here is another description of our demo.</p> -->
+          </div>
+        </div>
+
+        <div class="container mb-4">
+
+          <div class="demo-control-panel mx-auto">
+            <div class="wrapper-upload-image-component"> 
+              <div id="upload-image-component" class="mx-auto mw-100 p-0 my-0 form-control-goodwidth">
+
+                <div class="p-1 rounded rounded-lg bg-white shadow-sm border">
+                <div class="rounded rounded-lg bg-white border">
+                  <div class="input-group custom-file">
+                    <form action="simple-demo" class="m-0 p-0" method="POST" enctype="multipart/form-data" id="form-text-upload" name="form-text-upload">
+                    <input type="text" name="text-input" class="form-control" placeholder="Enter caption" id="text-input">
+                    <!-- <i class="material-icons text-primary custom-file-label-x-icon">add_a_photo</i> -->
+                    </form>
+                  </div>
+                </div>
+                </div>
+
+                <div class="text-center">
+                  <div class="text-center box-height-25">
+                    <img src="static/images/loading-icon-3.gif" id="loading-box" class="d-none" height="12"/>
+                    <div class="flashes"></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-4 py-2 px-0 px-md-4" name="display-container" id="display-container">
+            <div class="demo-results-area col-12 border rounded-lg p-4" name="OSMURI-container" id="OSMURI-container">
+              <p name="geoparse-link-result" id="geoparse-link-result"></p>
+              <div class="d-flex align-items-center">
+                <strong class="geoparsepy-spinner">Loading...</strong>
+                <div class="spinner-border ml-auto geoparsepy-spinner" role="status" aria-hidden="true"></div>
+              </div>
+            </div>
+
+            <div class="text-smallest text-right text-muted col-12 p-1">
+              Demo by Ramya, Nick, and Rajiv
+            </div>
+
+            <div class="col-12 border rounded-lg p-4 text-smallest mt-4 text-muted">
+              <strong>Technical Notes:</strong> This demo is running in a CPU-only cloud instance, hence the inference time it takes to run this demo is between 10 and 15 seconds ignoring preprocessing and upload/download times. The images uploded through this demo are not stored in our server or anywhere (not even temporarily), we only hold images on the server-side in volatile memory while they are being processed and return the resulting image as base64 encoded strings directly to the user's browser. Any images presented here as examples were not uploaded by a user but were images directly uploaded by our team. This is not a demo that aims to collect any data from users.
+            </div>
+
+          </div>
+
+        </div>
+      </main>
+
+</div>
+
+<footer class="page-footer">
+  {% include 'footer.html' %}
+</footer>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/vislang.js"></script>
+    <!-- <script>$("#geoparsepy-spinner").hide();</script> -->
+</body>
+</html>

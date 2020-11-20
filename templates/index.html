@@ -1,0 +1,76 @@
+<!--doctype html-->
+<html lang="en">
+<head>
+  {% include 'page-includes.html' %}
+</head>
+
+<body>
+<div class="container blank-container">
+
+	<header class="website-header">
+     {% include 'header.html' %}
+  </header>
+
+	<div class="container mb-4">
+    <div class="row">
+ 	    <div class="jumbo-box rounded-lg bg-light px-4 py-4 col-lg-12 shadow-sm">
+	     	<div class="my-1">
+          <p>In recent years, “anonymous” social media sources have become increasingly popular, with the rise of sites like Reddit, where true identities are typically masked with usernames. With this comes the need to scan the content you post, making sure it doesn’t reveal anything about your identity. Our goal with this project is to create a tool that allows users to scan their desired images and text pairings to see whether it reveals too much personal information about themselves. The applications of such a tool can be expanded to all forms of social media, allowing users to control the amount of information they are sharing with the world. </p>
+        </div>
+      </div>
+  	</div>
+  </div>
+  
+</div>
+
+<main role="main" class="container blank-container">
+	<div class="row">
+
+      <div class="col-md-6">
+        <div class="row no-gutters flex-md-row mb-4 position-relative">
+          <div class="col p-3 d-flex flex-column position-static">
+            <strong class="d-inline-block mb-2">News and Announcements</strong>
+            <ul class="news-listing">
+              <li><span class="text-muted">11/19/2020. </span>
+                 Demo has been created.
+              </li>
+	          </ul>
+          </div>
+        </div>
+      </div>
+
+	    <div class="col-md-6">
+        <div class="row">
+
+          <div class="col-md-12">
+            <a href="simple-demo" class="plain highlight">
+            <div class="highlight row no-gutters border rounded flex-md-row mb-4 shadow-sm h-sm-200 position-relative">
+              <div class="col p-3 d-flex flex-column position-static">
+                <strong class="d-inline-block mb-2 text-primary">Geolocation Demo</strong>
+                <p class="mb-auto">This demo takes an image and caption and outputs the "vulnerability" of the image to geolocation resolution.</p>
+              </div>
+              <div class="col-auto d-none d-xl-block p-0">
+                <img src="static/genderless-demo/gender-demo.png" width="220" class="py-auto my-4"/>
+              </div>
+            </div>
+            </a>
+          </div>
+
+        </div>
+	    </div>
+
+	</div>
+
+</main><!-- /.container -->
+
+<footer class="page-footer">
+  {% include 'footer.html' %}
+</footer>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Bootstrap JS -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="static/js/bootstrap.min.js"></script>
+
+</body>
+</html>
