@@ -2,8 +2,18 @@
 $(document).ready(function(){
 	var xhr = null;
 	// document.getElementById("OSMURI-container").style.visibility="hidden";
+
+	xhr = $.ajax({
+            url: 'load-demo-database',
+            type: 'post',
+            contentType: false,
+            processData: false,
+            success: displayOSMURI,
+            error: displayOSMURIError,
+        });
+
 	$('.geoparsepy-spinner').hide();
-	$('#peepee').hide();
+
 
 	$("#form-text-upload").on("submit", function(e){
 		// Prevent multiple AJAX calls. 
@@ -54,6 +64,10 @@ $(document).ready(function(){
 		console.log("Error occured in parsing");
 		$('.geoparsepy-spinner').hide();
 		document.getElementById("geoparse-link-result").innerHTML='Geoparsepy encountered an interal error';
+	}
+
+	function databaseLoaded(response){
+		console.log("database loaded...");
 	}
 
 })

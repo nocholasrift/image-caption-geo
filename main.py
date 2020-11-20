@@ -56,16 +56,13 @@ app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024
 import soton_corenlppy, geoparsepy, nltk
 import os, sys, logging, traceback, codecs, datetime, copy, time, ast, math, re, random, shutil, json
 
-@app.route('/simple-demo', methods = ["GET", "POST"])
-def simple_demo():
 
-	# If the request is GET then only render template.
-	if request.method == "GET":
-		return render_template('simple-demo.html')
+#global variables:
 
-	image_caption = request.form.get('image_caption')
-	print(type(image_caption), image_caption)
+global logger, dictGeospatialConfig, databaseHandle, dictLocationIDs, listFocusArea, cached_locations, indexed_locations, indexed_geoms, osmid_lookup, dictGeomResultsCache
 
+@app.route('/load-demo-database', methods = ["POST"])
+def load_demo_database():
 	logger, dictGeospatialConfig, databaseHandle, dictLocationIDs, listFocusArea = initialize_parameters()
 
 	cached_locations = geoparsepy.geo_preprocess_lib.cache_preprocessed_locations( databaseHandle, dictLocationIDs, 'public', dictGeospatialConfig )
@@ -82,6 +79,18 @@ def simple_demo():
 	osmid_lookup = geoparsepy.geo_parse_lib.calc_osmid_lookup( cached_locations )
 
 	dictGeomResultsCache = {}
+	return 
+
+
+@app.route('/simple-demo', methods = ["GET", "POST"])
+def simple_demo():
+
+	# If the request is GET then only render template.
+	if request.method == "GET":
+
+		return render_template('simple-demo.html')
+
+	image_caption = request.form.get('image_caption')
 
 	listText = [
 		image_caption,
