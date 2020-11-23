@@ -3,16 +3,7 @@ $(document).ready(function(){
 	var xhr = null;
 	// document.getElementById("OSMURI-container").style.visibility="hidden";
 
-	xhr = $.ajax({
-            url: 'load-demo-database',
-            type: 'post',
-            contentType: false,
-            processData: false,
-            success: displayOSMURI,
-            error: displayOSMURIError,
-        });
-
-	$('.geoparsepy-spinner').hide();
+	$('#loading-data-spinner').hide();
 
 
 	$("#form-text-upload").on("submit", function(e){

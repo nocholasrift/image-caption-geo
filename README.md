@@ -14,6 +14,9 @@ found in the scripts directory.
 conda create -n vislang python=3.7    # Create a virtual environment
 source activate vislang         	    # Activate virtual environment
 conda install whoosh flask  # Install dependencies
+# Download pickledObjects.zip from https://drive.google.com/file/d/1JklZyNSSON5sndl8SufbSA_kpjr7DIsF/view?usp=sharing and put in folder
+unzip pickledObjects.zip # Unzip pickled variables to reduce latency
+
 ```
 
 

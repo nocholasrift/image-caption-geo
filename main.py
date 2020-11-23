@@ -19,6 +19,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 
 from pagination import Pagination
 from utils import resize_image, center_crop_image, image2string, rotate_image_if_needed
+import pickle
 
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app
 # called `app` in `main.py`.
@@ -59,36 +60,13 @@ import os, sys, logging, traceback, codecs, datetime, copy, time, ast, math, re,
 
 #global variables:
 
-global logger, dictGeospatialConfig, databaseHandle, dictLocationIDs, listFocusArea, cached_locations, indexed_locations, indexed_geoms, osmid_lookup, dictGeomResultsCache
-
-@app.route('/load-demo-database', methods = ["POST"])
-def load_demo_database():
-	logger, dictGeospatialConfig, databaseHandle, dictLocationIDs, listFocusArea = initialize_parameters()
-
-	cached_locations = geoparsepy.geo_preprocess_lib.cache_preprocessed_locations( databaseHandle, dictLocationIDs, 'public', dictGeospatialConfig )
-	logger.info( 'number of cached locations = ' + str(len(cached_locations)) )
-
-	databaseHandle.close()
-
-	indexed_locations = geoparsepy.geo_parse_lib.calc_inverted_index( cached_locations, dictGeospatialConfig )
-	logger.info( 'number of indexed phrases = ' + str(len(indexed_locations.keys())) )
-
-	indexed_geoms = geoparsepy.geo_parse_lib.calc_geom_index( cached_locations )
-	logger.info( 'number of indexed geoms = ' + str(len(indexed_geoms.keys())) )
-
-	osmid_lookup = geoparsepy.geo_parse_lib.calc_osmid_lookup( cached_locations )
-
-	dictGeomResultsCache = {}
-	return 
-
-
 @app.route('/simple-demo', methods = ["GET", "POST"])
 def simple_demo():
-
 	# If the request is GET then only render template.
 	if request.method == "GET":
-
 		return render_template('simple-demo.html')
+
+	logger, dictGeospatialConfig, dictLocationIDs, listFocusArea, cached_locations, indexed_locations, indexed_geoms, osmid_lookup, dictGeomResultsCache = initialize_parameters()
 
 	image_caption = request.form.get('image_caption')
 
@@ -233,88 +211,6 @@ def get_tags(url):
 
 	return tags
 
-# def simple_demo():
-
-# 	# If the request is GET then only render template.
-# 	if request.method == "GET":
-# 		return render_template('simple-demo.html')
-
-# 	# If the request is POST then handle the upload.
-# 	image_url = request.form.get('image_url')
-# 	if image_url and validators.url(image_url):
-# 		# TODO: Handle valid url and exceptions.
-# 		response = http_requests.get(image_url)
-# 		file = io.BytesIO(response.content)
-# 		filename = image_url
-# 	else:
-# 		# Get file information just for display purposes.
-# 		file = request.files.get('image')
-# 		if not file:
-# 			return {"error": "file-invalid", 
-# 					"message": "The uploaded file is invalid"}
-# 		filename = file.filename
-
-
-# 	if len(filename) > 22: filename = filename[:10] + "..." + filename[-10:]
-
-# 	# Verify if this is a valid image type.
-# 	filestream = file.read()
-# 	image_type = imghdr.what("", h = filestream)
-
-# 	if image_type not in ALLOWED_IMAGE_TYPES:
-# 		return {"error": "file-type-not-allowed",
-# 				"message": "The uploaded file must be a JPG or PNG image"}
-
-# 	# Read the image directly from the file stream.
-# 	file.seek(0)  # Reset file stream pointer.
-# 	img = Image.open(file).convert('RGB')
-
-# 	# If the image is uploaded from a mobile device.
-# 	# this avoids having the image rotated.
-# 	img = rotate_image_if_needed(img)
-
-# 	# Resize and crop the input image.
-# 	img = resize_image(img, 256)
-# 	img = center_crop_image(img, 224)
-
-# 	# Encode the cropped  input image as a string for display.
-# 	input_image_str = image2string(img)
-
-# 	# Now process the image.
-# 	from PIL import ImageFilter
-# 	start_time = time.time()
-# 	output_img = img.filter(ImageFilter.GaussianBlur(radius = 10))
-# 	debug_str = 'process took %.2f seconds' % (time.time() - start_time)
-
-# 	# Now let's try some pytorch.
-# 	input_tensor = preprocess(img) # Convert to tensor.
-# 	print(input_tensor.shape)  # Print shape.
-	
-# 	input_batch = input_tensor.unsqueeze(0)  # Add batch dim.
-# 	print(model) # Print the model.
-	
-# 	outputs = model(input_batch)
-# 	# print(outputs.shape)
-
-# 	# Apply softmax and sort the values.
-# 	probs, indices = (-outputs.softmax(dim = 1).data).sort()
-# 	# Pick the top-5 scoring ones.
-# 	probs = (-probs).numpy()[0][:5]; indices = indices.numpy()[0][:10]
-# 	# Concat the top-5 scoring indices with the class names.
-# 	preds = ['P[\"' + imagenetClasses[idx] + '\"] = ' + ('%.6f' % prob) \
-#          for (prob, idx) in zip(probs, indices)]
-
-# 	# Print top classes predicted.
-# 	print('\n'.join(preds))
-# 	debug_str = '\n'.join(preds)
-
-# 	# Encode the output image as a string for display.
-# 	output_image_str = image2string(output_img)
-
-# 	return {'filename': filename, 
-# 			'input_image': input_image_str, 
-# 			'output_image': output_image_str,
-# 			'debug_str': debug_str}
 
 def initialize_parameters():
 	LOG_FORMAT = ('%(message)s')
@@ -322,73 +218,37 @@ def initialize_parameters():
 	logging.basicConfig( level=logging.INFO, format=LOG_FORMAT )
 	logger.info('logging started')
 
-	try:
-		dictGeospatialConfig = geoparsepy.geo_parse_lib.get_geoparse_config( 
-			lang_codes = ['en'],
-			logger = logger,
-			whitespace = u'"\u201a\u201b\u201c\u201d()',
-			sent_token_seps = ['\n','\r\n', '\f', u'\u2026'],
-			punctuation = """,;\/:+-#~&*=!?""",
-			)
-	except LookupError:
-		nltk.download('stopwords')
-		nltk.download('names')
-		nltk.download('wordnet')
-		nltk.download('omw')
-		dictGeospatialConfig = geoparsepy.geo_parse_lib.get_geoparse_config( 
-			lang_codes = ['en'],
-			logger = logger,
-			whitespace = u'"\u201a\u201b\u201c\u201d()',
-			sent_token_seps = ['\n','\r\n', '\f', u'\u2026'],
-			punctuation = """,;\/:+-#~&*=!?""",
-			)
+	with open('pickledObjects/dictGeospatialConfig.pkl', 'rb') as f:
+	    dictGeospatialConfig = pickle.load(f)
+	print('loaded dictGeospatialConfig')   
 
-	databaseHandle = soton_corenlppy.PostgresqlHandler.PostgresqlHandler( 'postgres', 'geoparse', 'localhost', 5432, 'openstreetmap', 600 )
+	with open('pickledObjects/dictLocationIDs.pkl', 'rb') as f:
+	    dictLocationIDs = pickle.load(f)
+	print('loaded dictLocationIDs')    
 
-	dictLocationIDs = {}
-	listFocusArea=[ 'global_cities', 'europe_places', 'north_america_places', 'uk_places' ]
-	for strFocusArea in listFocusArea :
-		dictLocationIDs[strFocusArea + '_admin'] = [-1,-1]
-		dictLocationIDs[strFocusArea + '_poly'] = [-1,-1]
-		dictLocationIDs[strFocusArea + '_line'] = [-1,-1]
-		dictLocationIDs[strFocusArea + '_point'] = [-1,-1]
+	with open('pickledObjects/listFocusArea.pkl', 'rb') as f:
+	    listFocusArea = pickle.load(f)
+	print('loaded listFocusArea')    
 
-	return logger, dictGeospatialConfig, databaseHandle, dictLocationIDs, listFocusArea
+	with open('pickledObjects/cached_locations.pkl', 'rb') as f:
+	    cached_locations = pickle.load(f)
+	print('loaded cached_locations')    
 
-# COCO Captions Explorer.
-@app.route('/coco-explorer', methods = ["GET"])
-def coco_search():
+	with open('pickledObjects/indexed_locations.pkl', 'rb') as f:
+	    indexed_locations = pickle.load(f)
+	print('loaded indexed_locations')  
 
-	# Obtain the query string.
-	query_str = request.args.get("query", "dog playing with ball")
-	page_num = request.args.get("page_num", 1, type = int)
-	page_len = request.args.get("page_len", 20, type = int)
-	split = request.args.get("split", "train")
+	with open('pickledObjects/osmid_lookup.pkl', 'rb') as f:
+	    osmid_lookup = pickle.load(f)
+	print('loaded osmid_lookup')    
 
-	# Location for the whoosh index to be queried.
-	coco_index_path = 'static/whoosh/cococaptions-indexdir-%s' % split
-	# Pre-load whoosh index to query coco-captions.
-	cococaptions_index = index.open_dir(coco_index_path)
+	with open('pickledObjects/dictGeomResultsCache.pkl', 'rb') as f:
+	    dictGeomResultsCache = pickle.load(f)
+	print('loaded dictGeomResultsCache')   
+	    
+	indexed_geoms = geoparsepy.geo_parse_lib.calc_geom_index( cached_locations )
+	print('initialized indexed_geoms') 
 
-	# Return results and do any pre-formatting before sending to view.
-	with cococaptions_index.searcher() as searcher:
-		query = QueryParser("caption", cococaptions_index.schema).parse(query_str)
-		results = searcher.search_page(query, page_num, pagelen = page_len)
+	return logger, dictGeospatialConfig, dictLocationIDs, listFocusArea, cached_locations, indexed_locations, indexed_geoms, osmid_lookup, dictGeomResultsCache
 
-		result_set = list()
-		for result in results:
-			result_set.append({"image_id": result["image_url"],
-							   "caption": result["caption"].split("<S>")})
 
-	# Create pagination navigation if needed.
-	pagination = Pagination(query_str, len(results), page_num, page_len, other_arguments = {'split': split})
-
-	# Render results template.
-	return render_template('coco-search.html', 
-            results = result_set, query = query_str, split = split, pagination = pagination)
-
-if __name__ == '__main__':
-    # Used when running locally only. When deploying to Google App
-    # Engine, a webserver process such as Gunicorn will serve the app. This
-    # can be configured by adding an `entrypoint` to app.yaml.
-    app.run(host='localhost', port=8080, debug=True)
