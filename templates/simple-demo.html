@@ -33,12 +33,22 @@
 
                 <div class="p-1 rounded rounded-lg bg-white shadow-sm border">
                 <div class="rounded rounded-lg bg-white border">
-                  <div class="input-group custom-file">
-                    <form action="simple-demo" class="m-0 p-0" method="POST" enctype="multipart/form-data" id="form-text-upload" name="form-text-upload">
-                    <input type="text" name="text-input" class="form-control" placeholder="Enter caption" id="text-input">
-                    <!-- <i class="material-icons text-primary custom-file-label-x-icon">add_a_photo</i> -->
-                    </form>
-                  </div>
+                  <form action="simple-demo" class="m-0 p-0" method="POST" enctype="multipart/form-data" id="form-text-upload" name="form-text-upload">
+                    <div class="form-group custom-text">
+                      <label for="text-input">Image caption</label>
+                      <input type="text" name="text-input" class="form-control" placeholder="Enter caption" id="text-input">
+                      <!-- <i class="material-icons text-primary custom-file-label-x-icon">add_a_photo</i> -->
+                    </div>
+
+                    <div class="form-group custom-file">
+                      <!-- <label for="file-upload">Image upload</label> -->
+                      <input type="file" name="file-upload" class="custom-file-input" id="file-upload">
+                      <label class="custom-file-label-x border-0 form-control-placeholder" for="file-upload">
+                        Tap here to choose an image...
+                      </label>
+                      <i class="material-icons text-primary custom-file-label-x-icon">add_a_photo</i>
+                    </div>
+                  </form>
                 </div>
                 </div>
 

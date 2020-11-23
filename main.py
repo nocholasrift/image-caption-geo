@@ -184,10 +184,9 @@ def simple_demo():
 				logger.info( 'Disambiguated Location [index ' + str(nMatchIndex) + ' osmid ' + repr(tupleOSMID) + ' @ ' + str(nTokenStart) + ' : ' + str(nTokenEnd) + '] = ' + strNameList + ' : ' + strOSMURI )
 				if nMatchIndex == 0:
 					geolink=strOSMURI
-	
+
 	tags = get_tags(geolink)
 	tags['geolink'] = geolink
-	print(tags)
 
 	return tags
 
@@ -195,8 +194,9 @@ def simple_demo():
 def get_tags(url):
 	tags= defaultdict(list)
 
-	relation_id = url[url.rfind("/")+1:]
-	xml_url = 'https://www.openstreetmap.org/api/0.6/relation/'+relation_id
+	relation_id = url[url.rfind("/",0, url.rfind("/"))+1:]
+	xml_url = 'https://www.openstreetmap.org/api/0.6/'+relation_id
+
 	r = http_requests.get(xml_url)
 
 	with open('metadata.xml', 'wb') as f:
@@ -204,8 +204,9 @@ def get_tags(url):
 
 	xml_tree = ET.parse('metadata.xml')
 	root = xml_tree.getroot()
+	parent=relation_id.split('/')[0]
 
-	for elem in root.findall('./relation/tag'):
+	for elem in root.findall('./'+parent+'/tag'):
 		# print(elem.attrib)
 		tags[elem.attrib['k']]=elem.attrib['v']
 
@@ -252,3 +253,5 @@ def initialize_parameters():
 	return logger, dictGeospatialConfig, dictLocationIDs, listFocusArea, cached_locations, indexed_locations, indexed_geoms, osmid_lookup, dictGeomResultsCache
 
 
+if __name__=='__main__':
+	app.run()

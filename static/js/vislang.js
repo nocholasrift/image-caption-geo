@@ -1,7 +1,7 @@
 
 $(document).ready(function(){
 	var xhr = null;
-	// document.getElementById("OSMURI-container").style.visibility="hidden";
+	$('.geoparsepy-spinner').hide();
 
 	$('#loading-data-spinner').hide();
 
@@ -9,6 +9,8 @@ $(document).ready(function(){
 	$("#form-text-upload").on("submit", function(e){
 		// Prevent multiple AJAX calls. 
 		// if(xhr && xhr.readyState != 4){ xhr.abort(); e.preventDefault(); return false;}
+		document.getElementById("OSMURI-container").style.visibility="visible";
+
 
 		$('.geoparsepy-spinner').show();
 		document.getElementById("geoparse-link-result").innerHTML="";
@@ -48,7 +50,10 @@ $(document).ready(function(){
 			}
         	// window.open(response['geolink']);
 
+
         }
+        else
+        	document.getElementById("geoparse-link-result").innerHTML="Text was parsed but nothing was returned :/";
 	}
 
 	function displayOSMURIError(response){
