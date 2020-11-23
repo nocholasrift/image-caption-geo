@@ -32,6 +32,7 @@ export FLASK_ENV=development
 export FLASK_APP=main.py
 flask run
 ```
+The server is now run on port 5000, not 8080
 
 ## Deploying the website on Google App Engine.
 Create a Google App Engine account on Google Cloud and start a a project. You can see how to setup and configure a basic Flask app on Google App Engine here https://codelabs.developers.google.com/codelabs/cloud-app-engine-python3/#0
