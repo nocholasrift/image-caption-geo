@@ -11,27 +11,46 @@ $(document).ready(function(){
 		// if(xhr && xhr.readyState != 4){ xhr.abort(); e.preventDefault(); return false;}
 		document.getElementById("OSMURI-container").style.visibility="visible";
 
+		image_caption = $("#text-input").val();
+		uploaded_file = document.getElementById("file-upload");
+		console.log(uploaded_file.files[0]);
+		// If the filename is too long then shorten.
 
-		$('.geoparsepy-spinner').show();
-		document.getElementById("geoparse-link-result").innerHTML="";
+		var fileName = uploaded_file.value.split("\\").pop();
+		if (fileName.length > 22) {
+			fileName = fileName.substring(0, 10) + "..." + fileName.substring(fileName.length - 10, fileName.length);
+		}
 
-		image_caption = $("#text-input").val()
+		// If the file size is bigger than 32MB then don't submit.
+		var filesize = uploaded_file.files[0].size / 1024 / 1024;
+	  	if (filesize > 32) {
+	  		var message =  "File size of " + filesize.toFixed(1) + "MB exceeds limit of 32MB";
+	  		$('#geoparse-link-result').empty();
+	  		$('#geoparse-link-result').showError(message);
+	  	} else {
+	  		// Show the filename in the input box.
+			$("#file-upload").siblings(".custom-file-label-x").removeClass("form-control-placeholder").addClass("selected").html(fileName);
 
-  		// Prepare data to be sent with form.
-  		var form_data = new FormData();
-    	form_data.append('image_caption', image_caption);
+			// Clear any error messages and show loading bar.
+			document.getElementById("geoparse-link-result").innerHTML="";
+			$('.geoparsepy-spinner').show();
 
-		console.log(image_caption);
-    	// Submit the form using an asynchronous call.
-  		xhr = $.ajax({
-            url: 'simple-demo',
-            type: 'post',
-            data: form_data,
-            contentType: false,
-            processData: false,
-            success: displayOSMURI,
-            error: displayOSMURIError,
-        });
+			var form_data = new FormData();
+        	var files = uploaded_file.files[0];
+	    	form_data.append('image_caption', image_caption);
+        	form_data.append('image', files);
+
+	    	// Submit the form using an asynchronous call.
+	  		xhr = $.ajax({
+	            url: 'simple-demo',
+	            type: 'post',
+	            data: form_data,
+	            contentType: false,
+	            processData: false,
+	            success: displayOSMURI,
+	            error: displayOSMURIError,
+	        });
+	  	}
 
   		// Avoid a browser POST request.
         e.preventDefault();
@@ -66,4 +85,20 @@ $(document).ready(function(){
 		console.log("database loaded...");
 	}
 
-})
+	$(window).keydown(function(event){
+	    if(event.keyCode == 13) {
+	      event.preventDefault();
+	      return false;
+	    }
+  	});
+
+  	$("#file-upload").change(function(){
+  		var fileName = $(this).val().split("\\").pop();
+		if (fileName.length > 22) {
+			fileName = fileName.substring(0, 10) + "..." + fileName.substring(fileName.length - 10, fileName.length);
+		}
+
+	    document.getElementById('file-upload-label').innerHTML = fileName;
+  	});
+
+});

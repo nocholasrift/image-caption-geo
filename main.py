@@ -29,7 +29,44 @@ app = Flask(__name__)
 def main():
 	return render_template('index.html')
 
+# def initialize_parameters():
+# 	LOG_FORMAT = ('%(message)s')
+# 	logger = logging.getLogger( __name__ )
+# 	logging.basicConfig( level=logging.INFO, format=LOG_FORMAT )
+# 	logger.info('logging started')
 
+# 	with open('pickledObjects/dictGeospatialConfig.pkl', 'rb') as f:
+# 	    dictGeospatialConfig = pickle.load(f)
+# 	print('loaded dictGeospatialConfig')   
+
+# 	with open('pickledObjects/dictLocationIDs.pkl', 'rb') as f:
+# 	    dictLocationIDs = pickle.load(f)
+# 	print('loaded dictLocationIDs')    
+
+# 	with open('pickledObjects/listFocusArea.pkl', 'rb') as f:
+# 	    listFocusArea = pickle.load(f)
+# 	print('loaded listFocusArea')    
+
+# 	with open('pickledObjects/cached_locations.pkl', 'rb') as f:
+# 	    cached_locations = pickle.load(f)
+# 	print('loaded cached_locations')    
+
+# 	with open('pickledObjects/indexed_locations.pkl', 'rb') as f:
+# 	    indexed_locations = pickle.load(f)
+# 	print('loaded indexed_locations')  
+
+# 	with open('pickledObjects/osmid_lookup.pkl', 'rb') as f:
+# 	    osmid_lookup = pickle.load(f)
+# 	print('loaded osmid_lookup')    
+
+# 	with open('pickledObjects/dictGeomResultsCache.pkl', 'rb') as f:
+# 	    dictGeomResultsCache = pickle.load(f)
+# 	print('loaded dictGeomResultsCache')   
+	    
+# 	indexed_geoms = geoparsepy.geo_parse_lib.calc_geom_index( cached_locations )
+# 	print('initialized indexed_geoms') 
+
+# 	return logger, dictGeospatialConfig, dictLocationIDs, listFocusArea, cached_locations, indexed_locations, indexed_geoms, osmid_lookup, dictGeomResultsCache
 
 # Simple Demo demo.
 import imghdr, json
@@ -39,11 +76,11 @@ from PIL import Image
 # Important: This doesn't just check for file extensions.
 ALLOWED_IMAGE_TYPES = ['jpeg' , 'png']
 
-# Configure app to allow maximum  of 15 MB image file sizes.
+# Configure app to allow maximum  of 32 MB image file sizes.
 # Note: This will send a 403 HTTP error page. 
 # So we will need to validate file size on the client side.
 # Client side could have a stricter requirement size.
-app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
 
 
 ####################################################
@@ -59,6 +96,41 @@ import os, sys, logging, traceback, codecs, datetime, copy, time, ast, math, re,
 
 
 #global variables:
+LOG_FORMAT = ('%(message)s')
+logger = logging.getLogger( __name__ )
+logging.basicConfig( level=logging.INFO, format=LOG_FORMAT )
+logger.info('logging started')
+
+with open('pickledObjects/dictGeospatialConfig.pkl', 'rb') as f:
+    dictGeospatialConfig = pickle.load(f)
+print('loaded dictGeospatialConfig')   
+
+with open('pickledObjects/dictLocationIDs.pkl', 'rb') as f:
+    dictLocationIDs = pickle.load(f)
+print('loaded dictLocationIDs')    
+
+with open('pickledObjects/listFocusArea.pkl', 'rb') as f:
+    listFocusArea = pickle.load(f)
+print('loaded listFocusArea')    
+
+with open('pickledObjects/cached_locations.pkl', 'rb') as f:
+    cached_locations = pickle.load(f)
+print('loaded cached_locations')    
+	
+with open('pickledObjects/indexed_locations.pkl', 'rb') as f:
+    indexed_locations = pickle.load(f)
+print('loaded indexed_locations')  
+
+with open('pickledObjects/osmid_lookup.pkl', 'rb') as f:
+    osmid_lookup = pickle.load(f)
+print('loaded osmid_lookup')    
+
+with open('pickledObjects/dictGeomResultsCache.pkl', 'rb') as f:
+    dictGeomResultsCache = pickle.load(f)
+print('loaded dictGeomResultsCache')   
+    
+indexed_geoms = geoparsepy.geo_parse_lib.calc_geom_index( cached_locations )
+print('initialized indexed_geoms') 
 
 @app.route('/simple-demo', methods = ["GET", "POST"])
 def simple_demo():
@@ -66,10 +138,13 @@ def simple_demo():
 	if request.method == "GET":
 		return render_template('simple-demo.html')
 
-	logger, dictGeospatialConfig, dictLocationIDs, listFocusArea, cached_locations, indexed_locations, indexed_geoms, osmid_lookup, dictGeomResultsCache = initialize_parameters()
-
-	image_caption = request.form.get('image_caption')
-
+	print(request.form)
+	print(request.files)
+	image = request.files.get('image')
+	image = retrieve_image_from_file(image)
+	image_caption = str(request.form.get('image_caption'))
+	print("image caption is", image_caption)
+	tags={}
 	listText = [
 		image_caption,
 	]
@@ -185,10 +260,12 @@ def simple_demo():
 				if nMatchIndex == 0:
 					geolink=strOSMURI
 
-	tags = get_tags(geolink)
-	tags['geolink'] = geolink
+	if geolink != "":
+		tags = get_tags(geolink)
+		tags['geolink'] = geolink
+		return tags
 
-	return tags
+	return {'geolink': geolink}
 
 
 def get_tags(url):
@@ -213,45 +290,23 @@ def get_tags(url):
 	return tags
 
 
-def initialize_parameters():
-	LOG_FORMAT = ('%(message)s')
-	logger = logging.getLogger( __name__ )
-	logging.basicConfig( level=logging.INFO, format=LOG_FORMAT )
-	logger.info('logging started')
+def retrieve_image_from_file(file):
+	fname = file.filename
+	if len(fname) > 22: fname = fname[:10] + "..." + fname[-10:]
 
-	with open('pickledObjects/dictGeospatialConfig.pkl', 'rb') as f:
-	    dictGeospatialConfig = pickle.load(f)
-	print('loaded dictGeospatialConfig')   
+	# Verify if this is a valid image type.
+	filestream = file.read()
+	image_type = imghdr.what("", h = filestream)
 
-	with open('pickledObjects/dictLocationIDs.pkl', 'rb') as f:
-	    dictLocationIDs = pickle.load(f)
-	print('loaded dictLocationIDs')    
+	# Read the image directly from the file stream.
+	file.seek(0)  # Reset file stream pointer.
+	img = Image.open(file).convert('RGB')
 
-	with open('pickledObjects/listFocusArea.pkl', 'rb') as f:
-	    listFocusArea = pickle.load(f)
-	print('loaded listFocusArea')    
+	# If the image is uploaded from a mobile device.
+	# this avoids having the image rotated.
+	img = rotate_image_if_needed(img)
 
-	with open('pickledObjects/cached_locations.pkl', 'rb') as f:
-	    cached_locations = pickle.load(f)
-	print('loaded cached_locations')    
-
-	with open('pickledObjects/indexed_locations.pkl', 'rb') as f:
-	    indexed_locations = pickle.load(f)
-	print('loaded indexed_locations')  
-
-	with open('pickledObjects/osmid_lookup.pkl', 'rb') as f:
-	    osmid_lookup = pickle.load(f)
-	print('loaded osmid_lookup')    
-
-	with open('pickledObjects/dictGeomResultsCache.pkl', 'rb') as f:
-	    dictGeomResultsCache = pickle.load(f)
-	print('loaded dictGeomResultsCache')   
-	    
-	indexed_geoms = geoparsepy.geo_parse_lib.calc_geom_index( cached_locations )
-	print('initialized indexed_geoms') 
-
-	return logger, dictGeospatialConfig, dictLocationIDs, listFocusArea, cached_locations, indexed_locations, indexed_geoms, osmid_lookup, dictGeomResultsCache
-
+	return img
 
 if __name__=='__main__':
-	app.run()
+	app.run(debug=True, use_reloader=False)
