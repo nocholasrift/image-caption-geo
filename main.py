@@ -20,9 +20,35 @@ from werkzeug.exceptions import RequestEntityTooLarge
 from pagination import Pagination
 from utils import resize_image, center_crop_image, image2string, rotate_image_if_needed
 import pickle
+from simple_hierarchy.hierarchal_model import HierarchalModel 
+import torchvision.transforms as transforms
+import torchvision
+import torch
+import numpy as np
 
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app
 # called `app` in `main.py`.
+base_model = torchvision.models.resnext101_32x8d(pretrained = True)
+class DemoModel(torch.nn.Module):
+	def __init__(self):
+		super(DemoModel, self).__init__()
+		hierarchy = {
+			('A', 3) : [('B', 30)]
+		}
+		self.model = HierarchalModel(base_model=base_model, 
+						hierarchy=hierarchy, size=(1000,256,256), 
+						output_order=[('A', 3), ('B',30)])
+	def forward(self, x):
+		return self.model(x)
+	def only_district_out(self, x):
+		return self.model(x)[1]
+	def load_state_dict(self, weights):
+		self.model.load_state_dict(weights)
+model = DemoModel()
+model.load_state_dict(torch.load('/app/best_model_so_far.pth', map_location='cpu'))
+model.to(device='cpu')
+model.eval()
+
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
@@ -94,13 +120,12 @@ app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
 import soton_corenlppy, geoparsepy, nltk
 import os, sys, logging, traceback, codecs, datetime, copy, time, ast, math, re, random, shutil, json
 
-
 #global variables:
 LOG_FORMAT = ('%(message)s')
 logger = logging.getLogger( __name__ )
 logging.basicConfig( level=logging.INFO, format=LOG_FORMAT )
 logger.info('logging started')
-
+"""
 with open('pickledObjects/dictGeospatialConfig.pkl', 'rb') as f:
     dictGeospatialConfig = pickle.load(f)
 print('loaded dictGeospatialConfig')   
@@ -131,6 +156,7 @@ print('loaded dictGeomResultsCache')
     
 indexed_geoms = geoparsepy.geo_parse_lib.calc_geom_index( cached_locations )
 print('initialized indexed_geoms') 
+"""
 
 @app.route('/simple-demo', methods = ["GET", "POST"])
 def simple_demo():
@@ -145,6 +171,7 @@ def simple_demo():
 	image_caption = str(request.form.get('image_caption'))
 	print("image caption is", image_caption)
 	tags={}
+	"""
 	listText = [
 		image_caption,
 	]
@@ -264,8 +291,84 @@ def simple_demo():
 		tags = get_tags(geolink)
 		tags['geolink'] = geolink
 		return tags
+	"""
 
-	return {'geolink': geolink}
+	geolink = "hi there"
+	transform = transforms.Compose([
+		transforms.Resize(256),
+		transforms.CenterCrop(224),
+		transforms.ToTensor()
+	])
+	transform_normalize = transforms.Normalize(
+		mean=[0.485, 0.456, 0.406],
+		std=[0.229, 0.224, 0.225]
+	)
+	transformed_img = transform(image)
+	input = transform_normalize(transformed_img)
+	out_c, out_d = model(input.unsqueeze(0))		
+	probs_c = torch.softmax(out_c, dim=1)		
+	probs_d = torch.softmax(out_d, dim=1)
+	prob_d, district = torch.max(probs_d, dim=1)	
+	city_names = ["Pittsburg", "Orlando","Manhattan"]
+
+	prob_c, city = torch.max(probs_c, dim=1)
+	image_score = (prob_d.item() + prob_c.item())/ 2
+	return {'geolink': geolink, 'test' : 'test_value', 'image_results' : {'Image Score': image_score, 'District':district.item() % 10, 'City':city_names[city.item()]}}
+
+@app.route('/feature-occlusion', methods = ["POST"])
+def feature_occlusion():
+	from captum.attr import IntegratedGradients
+	from captum.attr import GradientShap
+	from captum.attr import Occlusion
+	from captum.attr import NoiseTunnel
+	from captum.attr import visualization as viz
+	import torch.nn.functional as F
+	import time 
+	print(np.array([1]))
+	image = request.files.get('image')
+	image = retrieve_image_from_file(image)
+	st = time.time()
+	transform = transforms.Compose([
+		transforms.Resize(256),
+		transforms.CenterCrop(224),
+		transforms.ToTensor()
+	])
+
+
+
+	transform_normalize = transforms.Normalize(
+			mean=[0.485, 0.456, 0.406],
+			std=[0.229, 0.224, 0.225]
+		)
+
+
+	transformed_img = transform(image)
+
+	input = transform_normalize(transformed_img)
+	input = input.unsqueeze(0)
+	occlusion = Occlusion(model.only_district_out)
+	cit, dis = model(input)
+	probs = torch.softmax(dis, dim=1)
+	probability, pred_label_idx = probs.max(dim=1)
+	pred_label_idx.squeeze_()
+	
+	attributions_occ = occlusion.attribute(input,
+											strides = (3, 8, 8),
+											target=pred_label_idx,
+											sliding_window_shapes=(3,15, 15),
+											baselines=0)
+
+	fig, ax = viz.visualize_image_attr_multiple(np.transpose(attributions_occ.squeeze().cpu().detach().numpy(), (1,2,0)),
+											np.transpose(transformed_img.squeeze().cpu().detach().numpy(), (1,2,0)),
+											["original_image", "heat_map"],
+											["all", "positive"],
+											show_colorbar=True,
+											outlier_perc=2,
+											)
+
+	logger.info(('Seconds it took to run : ' + str(time.time() - st)))
+	fig.savefig('/app/static/images/occlusion.svg')
+	return {'location': '/static/images/occlusion.svg'}
 
 
 def get_tags(url):
@@ -309,4 +412,4 @@ def retrieve_image_from_file(file):
 	return img
 
 if __name__=='__main__':
-	app.run(debug=True, use_reloader=False)
+	app.run(host='0.0.0.0', debug=True, use_reloader=False)
