@@ -65,8 +65,12 @@ $(document).ready(function(){
 			document.getElementById("geoparse-link-result").innerHTML='Text was parsed: <a href="'+response['geolink']+'">'+response['geolink']+'</a>';
 			for (let k in response){
 				if (k == "geolink") 	continue;
-				document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response[k]+'</li>';
+				if (k == "confidence")
+					document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response[k]+'\%</li>';
+				else
+					document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response[k]+'</li>';
 			}
+			// document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response[k]+'</li>';
         	// window.open(response['geolink']);
 
 

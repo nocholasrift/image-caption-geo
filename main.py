@@ -225,6 +225,7 @@ def simple_demo():
 				logger.info( 'Reverse geocoded geotag location [index ' + str(nIndexLoc) + ' osmid ' + repr(tupleOSMIDs) + '] = ' + strName )
 
 	geolink=""
+	max_confidence=0
 	for nIndex in range(len(listMatchSet)) :
 		logger.info( 'Text = ' + listText[nIndex] )
 		listMatch = listMatchSet[ nIndex ]
@@ -240,6 +241,9 @@ def simple_demo():
 					logger.info( 'Location [index ' + str(nIndexLoc) + ' osmid ' + repr(tupleOSMIDs) + ' @ ' + str(nTokenStart) + ' : ' + str(nTokenEnd) + '] = ' + ' '.join(tuplePhrase) )
 					break
 		listLocMatches = geoparsepy.geo_parse_lib.create_matched_location_list( listMatch, cached_locations, osmid_lookup )
+		confidences= geoparsepy.geo_parse_lib.calc_location_confidence( listLocMatches, dictGeospatialConfig, geom_context = strGeom, geom_cache = dictGeomResultsCache)
+		size, max_confidence = len(confidences), max(confidences)
+		max_confidence = round(100*max_confidence/size, 2)
 		geoparsepy.geo_parse_lib.filter_matches_by_confidence( listLocMatches, dictGeospatialConfig, geom_context = strGeom, geom_cache = dictGeomResultsCache )
 		geoparsepy.geo_parse_lib.filter_matches_by_geom_area( listLocMatches, dictGeospatialConfig )
 		geoparsepy.geo_parse_lib.filter_matches_by_region_of_interest( listLocMatches, [-148838, -62149], dictGeospatialConfig )
@@ -263,9 +267,10 @@ def simple_demo():
 	if geolink != "":
 		tags = get_tags(geolink)
 		tags['geolink'] = geolink
+		tags['confidence'] = max_confidence
 		return tags
 
-	return {'geolink': geolink}
+	return {'geolink': geolink, 'confidence': 0}
 
 
 def get_tags(url):
