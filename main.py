@@ -45,7 +45,7 @@ class DemoModel(torch.nn.Module):
 	def load_state_dict(self, weights):
 		self.model.load_state_dict(weights)
 model = DemoModel()
-model.load_state_dict(torch.load('/app/best_model_so_far.pth', map_location='cpu'))
+model.load_state_dict(torch.load('best_model_so_far.pth', map_location='cpu'))
 model.to(device='cpu')
 model.eval()
 
@@ -55,44 +55,6 @@ app = Flask(__name__)
 def main():
 	return render_template('index.html')
 
-# def initialize_parameters():
-# 	LOG_FORMAT = ('%(message)s')
-# 	logger = logging.getLogger( __name__ )
-# 	logging.basicConfig( level=logging.INFO, format=LOG_FORMAT )
-# 	logger.info('logging started')
-
-# 	with open('pickledObjects/dictGeospatialConfig.pkl', 'rb') as f:
-# 	    dictGeospatialConfig = pickle.load(f)
-# 	print('loaded dictGeospatialConfig')   
-
-# 	with open('pickledObjects/dictLocationIDs.pkl', 'rb') as f:
-# 	    dictLocationIDs = pickle.load(f)
-# 	print('loaded dictLocationIDs')    
-
-# 	with open('pickledObjects/listFocusArea.pkl', 'rb') as f:
-# 	    listFocusArea = pickle.load(f)
-# 	print('loaded listFocusArea')    
-
-# 	with open('pickledObjects/cached_locations.pkl', 'rb') as f:
-# 	    cached_locations = pickle.load(f)
-# 	print('loaded cached_locations')    
-
-# 	with open('pickledObjects/indexed_locations.pkl', 'rb') as f:
-# 	    indexed_locations = pickle.load(f)
-# 	print('loaded indexed_locations')  
-
-# 	with open('pickledObjects/osmid_lookup.pkl', 'rb') as f:
-# 	    osmid_lookup = pickle.load(f)
-# 	print('loaded osmid_lookup')    
-
-# 	with open('pickledObjects/dictGeomResultsCache.pkl', 'rb') as f:
-# 	    dictGeomResultsCache = pickle.load(f)
-# 	print('loaded dictGeomResultsCache')   
-	    
-# 	indexed_geoms = geoparsepy.geo_parse_lib.calc_geom_index( cached_locations )
-# 	print('initialized indexed_geoms') 
-
-# 	return logger, dictGeospatialConfig, dictLocationIDs, listFocusArea, cached_locations, indexed_locations, indexed_geoms, osmid_lookup, dictGeomResultsCache
 
 # Simple Demo demo.
 import imghdr, json
@@ -125,7 +87,7 @@ LOG_FORMAT = ('%(message)s')
 logger = logging.getLogger( __name__ )
 logging.basicConfig( level=logging.INFO, format=LOG_FORMAT )
 logger.info('logging started')
-"""
+
 with open('pickledObjects/dictGeospatialConfig.pkl', 'rb') as f:
     dictGeospatialConfig = pickle.load(f)
 print('loaded dictGeospatialConfig')   
@@ -156,7 +118,7 @@ print('loaded dictGeomResultsCache')
     
 indexed_geoms = geoparsepy.geo_parse_lib.calc_geom_index( cached_locations )
 print('initialized indexed_geoms') 
-"""
+
 
 @app.route('/simple-demo', methods = ["GET", "POST"])
 def simple_demo():
@@ -171,11 +133,39 @@ def simple_demo():
 	image_caption = str(request.form.get('image_caption'))
 	print("image caption is", image_caption)
 	tags={}
-	"""
+	
 	listText = [
 		image_caption,
 	]
+	geolink = text_parser(listText)
 
+	if geolink != "":
+		tags = get_tags(geolink)
+		tags['geolink'] = geolink
+
+	transform = transforms.Compose([
+		transforms.Resize(256),
+		transforms.CenterCrop(224),
+		transforms.ToTensor()
+	])
+	transform_normalize = transforms.Normalize(
+		mean=[0.485, 0.456, 0.406],
+		std=[0.229, 0.224, 0.225]
+	)
+	transformed_img = transform(image)
+	input = transform_normalize(transformed_img)
+	out_c, out_d = model(input.unsqueeze(0))		
+	probs_c = torch.softmax(out_c, dim=1)		
+	probs_d = torch.softmax(out_d, dim=1)
+	prob_d, district = torch.max(probs_d, dim=1)	
+	city_names = ["Pittsburg", "Orlando","Manhattan"]
+
+	prob_c, city = torch.max(probs_c, dim=1)
+	image_score = (prob_d.item() + prob_c.item())/ 2
+
+	return {'geolink': tags, 'image_results' : {'Image Score': image_score, 'District':district.item() % 10, 'City':city_names[city.item()]}}
+
+def text_parser(listText):
 	listTokenSets = []
 	listGeotags = []
 	for nIndex in range(len(listText)) :
@@ -286,34 +276,7 @@ def simple_demo():
 				logger.info( 'Disambiguated Location [index ' + str(nMatchIndex) + ' osmid ' + repr(tupleOSMID) + ' @ ' + str(nTokenStart) + ' : ' + str(nTokenEnd) + '] = ' + strNameList + ' : ' + strOSMURI )
 				if nMatchIndex == 0:
 					geolink=strOSMURI
-
-	if geolink != "":
-		tags = get_tags(geolink)
-		tags['geolink'] = geolink
-		return tags
-	"""
-
-	geolink = "hi there"
-	transform = transforms.Compose([
-		transforms.Resize(256),
-		transforms.CenterCrop(224),
-		transforms.ToTensor()
-	])
-	transform_normalize = transforms.Normalize(
-		mean=[0.485, 0.456, 0.406],
-		std=[0.229, 0.224, 0.225]
-	)
-	transformed_img = transform(image)
-	input = transform_normalize(transformed_img)
-	out_c, out_d = model(input.unsqueeze(0))		
-	probs_c = torch.softmax(out_c, dim=1)		
-	probs_d = torch.softmax(out_d, dim=1)
-	prob_d, district = torch.max(probs_d, dim=1)	
-	city_names = ["Pittsburg", "Orlando","Manhattan"]
-
-	prob_c, city = torch.max(probs_c, dim=1)
-	image_score = (prob_d.item() + prob_c.item())/ 2
-	return {'geolink': geolink, 'test' : 'test_value', 'image_results' : {'Image Score': image_score, 'District':district.item() % 10, 'City':city_names[city.item()]}}
+	return geolink
 
 @app.route('/feature-occlusion', methods = ["POST"])
 def feature_occlusion():

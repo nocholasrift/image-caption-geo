@@ -62,11 +62,12 @@ $(document).ready(function(){
 		$('.geoparsepy-spinner').hide();
 		if(response != 0){
 			console.log("Loading up response now");
-			document.getElementById("geoparse-link-result").innerHTML='<b>Text was parsed</b>: <a href="'+response['geolink']+'">'+response['geolink']+'</a>';
-			for (let k in response){
-				if (k == "geolink" || k == "image_results") 	continue;
-				document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response[k]+'</li>';
+			document.getElementById("geoparse-link-result").innerHTML='<b>Text was parsed</b>:';
+			
+			for (let k in response["geolink"]){
+				document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response['geolink'][k]+'</li>';
 			}
+
 			document.getElementById("geoparse-link-result").innerHTML+='<br><br><b>Image Results</b>:';
 
 			for (let k in response['image_results']){
