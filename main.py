@@ -294,7 +294,7 @@ def text_parser(listText):
 		size, max_confidence = len(confidences), 0 if len(confidences) == 0 else max(confidences)
 
 		if max_confidence > 0:
-			max_confidence = .5 + .25*max_confidence / 100 + .25*max_confidence / 300
+			max_confidence = .5 + min(.25*max_confidence / 100, .25) + min(.25*max_confidence / 300, .25)
 
 		geoparsepy.geo_parse_lib.filter_matches_by_confidence( listLocMatches, dictGeospatialConfig, geom_context = strGeom, geom_cache = dictGeomResultsCache )
 		geoparsepy.geo_parse_lib.filter_matches_by_geom_area( listLocMatches, dictGeospatialConfig )
