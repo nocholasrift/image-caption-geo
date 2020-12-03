@@ -168,7 +168,7 @@ def simple_demo():
 	city_names = ["Pittsburg", "Orlando","Manhattan"]
 
 	prob_c, city = torch.max(probs_c, dim=1)
-	image_score = 1 - prob_d.item()
+	image_score = get_image_score(prob_c.item(), prob_d.item())
 	pred_city = city_names[city.item()]
 
 	comp_listText = [
@@ -189,6 +189,12 @@ def simple_demo():
 	print('composite scores', comp_tags)
 
 	return {'geolink': tags, 'composite scores': comp_tags, 'image_results' : {'Image Privacy Score': image_score, 'District':district.item() % 10, 'City':pred_city}}
+
+def get_image_score(city_conf, district_conf, c=0.8):
+	if city_conf >= c:
+		return 1-district_conf
+	return 1
+
 
 def get_text_score(confidence, area, area_const=16.79*2): #16.79 is average size in pittsburgh
 	if area == 0:
