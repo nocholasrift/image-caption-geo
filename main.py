@@ -170,6 +170,8 @@ def simple_demo():
 	prob_c, city = torch.max(probs_c, dim=1)
 	image_score = get_image_score(prob_c.item(), prob_d.item())
 	pred_city = city_names[city.item()]
+	if image_score == 1:
+		pred_city = ""
 
 	comp_listText = [
 		pred_city + " " + image_caption,
@@ -379,7 +381,7 @@ def feature_occlusion():
 											)
 
 	logger.info(('Seconds it took to run : ' + str(time.time() - st)))
-	fig.savefig('/app/static/images/occlusion.svg')
+	fig.savefig('./static/images/occlusion.svg')
 	return {'location': '/static/images/occlusion.svg'}
 
 
