@@ -170,27 +170,32 @@ def simple_demo():
 	prob_c, city = torch.max(probs_c, dim=1)
 	image_score = get_image_score(prob_c.item(), prob_d.item())
 	pred_city = city_names[city.item()]
-	if image_score == 1:
-		pred_city = ""
-
-	comp_listText = [
-		pred_city + " " + image_caption,
-	]
-	print(comp_listText)
-	comp_geolink, comp_max_confidence = text_parser(comp_listText)
-
+	pred_district = district.item() % 10
 	comp_tags = {}
-	comp_tags['Text Privacy Score'] = 1
-	if comp_geolink != "":
-		comp_tags, comp_area = get_tags(comp_geolink)
-		comp_tags['geolink'] = comp_geolink
-		comp_tags['confidence'] = comp_max_confidence
-		comp_tags['Composite Privacy Score'] = get_text_score(comp_tags['confidence'], comp_area)*100
+	if image_score == 1:
+		comp_tags = tags
+		comp_tags['Composite Privacy Score'] = tags['Text Privacy Score']
+		pred_city = "Unable to Determine City"
+		pred_district = ''
+	else: 
+		comp_listText = [
+			pred_city + " " + image_caption,
+		]
+
+		print(comp_listText)
+		comp_geolink, comp_max_confidence = text_parser(comp_listText)
+
+		comp_tags['Text Privacy Score'] = 1
+		if comp_geolink != "":
+			comp_tags, comp_area = get_tags(comp_geolink)
+			comp_tags['geolink'] = comp_geolink
+			comp_tags['confidence'] = comp_max_confidence
+			comp_tags['Composite Privacy Score'] = get_text_score(comp_tags['confidence'], comp_area)*100
 
 	print('text scores', tags)
 	print('composite scores', comp_tags)
 
-	return {'geolink': tags, 'composite scores': comp_tags, 'image_results' : {'Image Privacy Score': image_score*100, 'District':district.item() % 10, 'City':pred_city}}
+	return {'geolink': tags, 'composite scores': comp_tags, 'image_results' : {'Image Privacy Score': image_score*100, 'District': pred_district, 'City':pred_city}}
 
 def get_image_score(city_conf, district_conf, c=0.8):
 	if city_conf >= c:

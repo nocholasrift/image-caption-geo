@@ -100,7 +100,7 @@ $(document).ready(function(){
 
         	// window.open(response['geolink']);
 			var btn = document.createElement("BUTTON");
-			btn.innerHTML = 'Find Revealing Image Regions (may be slow)';
+			btn.innerHTML = 'Find Revealing Image Regions';
 			btn.className += 'btn btn-primary';
 			btn.id = 'btn-feature-occlusion-get';
 			document.getElementById("geoparse-link-result").appendChild(btn);
