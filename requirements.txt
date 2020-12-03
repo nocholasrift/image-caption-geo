@@ -30,3 +30,4 @@ urllib3==1.26.2
 validators==0.18.1
 Werkzeug==1.0.1
 Whoosh==2.7.4
+qwikidata==0.4.0

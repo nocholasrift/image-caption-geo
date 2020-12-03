@@ -74,6 +74,13 @@ $(document).ready(function(){
 			for (let k in response['image_results']){
 				document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response['image_results'][k]+'</li>';
 			}
+
+			document.getElementById("geoparse-link-result").innerHTML+='<br><br><b>Composite Results</b>:';
+
+			for (let k in response['composite scores']){
+				document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response['composite scores'][k]+'</li>';
+			}
+
         	// window.open(response['geolink']);
 			var btn = document.createElement("BUTTON");
 			btn.innerHTML = 'Find Revealing Image Regions (may be slow)';

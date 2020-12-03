@@ -25,6 +25,8 @@ import torchvision.transforms as transforms
 import torchvision
 import torch
 import numpy as np
+from qwikidata.entity import WikidataItem, WikidataLexeme, WikidataProperty
+from qwikidata.linked_data_interface import get_entity_dict_from_api
 
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app
 # called `app` in `main.py`.
@@ -139,10 +141,13 @@ def simple_demo():
 	]
 	geolink, max_confidence = text_parser(listText)
 
+	tags['Text Privacy Score'] = 1
+
 	if geolink != "":
-		tags = get_tags(geolink)
+		tags, area = get_tags(geolink)
 		tags['geolink'] = geolink
 		tags['confidence'] = max_confidence
+		tags['Text Privacy Score'] = get_text_score(tags['confidence'], area)
 
 
 	transform = transforms.Compose([
@@ -163,9 +168,29 @@ def simple_demo():
 	city_names = ["Pittsburg", "Orlando","Manhattan"]
 
 	prob_c, city = torch.max(probs_c, dim=1)
-	image_score = (prob_d.item() + prob_c.item())/ 2
+	image_score = 1 - prob_d.item()
+	pred_city = city_names[city.item()]
 
-	return {'geolink': tags, 'image_results' : {'Image Score': image_score, 'District':district.item() % 10, 'City':city_names[city.item()]}}
+	comp_listText = [
+		image_caption + " " + pred_city,
+	]
+	comp_geolink, comp_max_confidence = text_parser(comp_listText)
+
+	comp_tags = {}
+	comp_tags['Text Privacy Score'] = 1
+	if comp_geolink != "":
+		comp_tags, comp_area = get_tags(comp_geolink)
+		comp_tags['geolink'] = comp_geolink
+		comp_tags['confidence'] = comp_max_confidence
+		comp_tags['Composite Privacy Score'] = get_text_score(comp_tags['confidence'], comp_area)
+
+	print('text scores', tags)
+	print('composite scores', comp_tags)
+
+	return {'geolink': tags, 'composite scores': comp_tags, 'image_results' : {'Image Privacy Score': image_score, 'District':district.item() % 10, 'City':pred_city}}
+
+def get_text_score(confidence, area, area_const=16.79): #16.79 is average size in pittsburgh
+	return confidence*min(1, area/area_const)
 
 def text_parser(listText):
 	listTokenSets = []
@@ -261,8 +286,11 @@ def text_parser(listText):
 					break
 		listLocMatches = geoparsepy.geo_parse_lib.create_matched_location_list( listMatch, cached_locations, osmid_lookup )
 		confidences= geoparsepy.geo_parse_lib.calc_location_confidence( listLocMatches, dictGeospatialConfig, geom_context = strGeom, geom_cache = dictGeomResultsCache)
-		size, max_confidence = len(confidences), max(confidences)
-		max_confidence = round(100*max_confidence/size, 2)
+		max_confidence = 0
+		size = len(confidences)
+		if size > 0:
+			max_confidence = max(confidences)
+			max_confidence = round(100*max_confidence/size, 2)
 		geoparsepy.geo_parse_lib.filter_matches_by_confidence( listLocMatches, dictGeospatialConfig, geom_context = strGeom, geom_cache = dictGeomResultsCache )
 		geoparsepy.geo_parse_lib.filter_matches_by_geom_area( listLocMatches, dictGeospatialConfig )
 		geoparsepy.geo_parse_lib.filter_matches_by_region_of_interest( listLocMatches, [-148838, -62149], dictGeospatialConfig )
@@ -359,7 +387,16 @@ def get_tags(url):
 		# print(elem.attrib)
 		tags[elem.attrib['k']]=elem.attrib['v']
 
-	return tags
+	wikidata_key = tags['wikidata']
+
+	area = get_wikidata_area(wikidata_key)
+
+	return tags, area
+
+
+def get_wikidata_area(entity):
+	entity_dict = get_entity_dict_from_api(entity)
+	return float(entity_dict['claims']['P2046'][0]['mainsnak']['datavalue']['value']['amount'])
 
 
 def retrieve_image_from_file(file):
