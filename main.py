@@ -147,7 +147,7 @@ def simple_demo():
 		tags, area = get_tags(geolink)
 		tags['geolink'] = geolink
 		tags['confidence'] = max_confidence
-		tags['Text Privacy Score'] = get_text_score(tags['confidence'], area)
+		tags['Text Privacy Score'] = get_text_score(tags['confidence'], area)*100
 
 
 	transform = transforms.Compose([
@@ -185,12 +185,12 @@ def simple_demo():
 		comp_tags, comp_area = get_tags(comp_geolink)
 		comp_tags['geolink'] = comp_geolink
 		comp_tags['confidence'] = comp_max_confidence
-		comp_tags['Composite Privacy Score'] = get_text_score(comp_tags['confidence'], comp_area)
+		comp_tags['Composite Privacy Score'] = get_text_score(comp_tags['confidence'], comp_area)*100
 
 	print('text scores', tags)
 	print('composite scores', comp_tags)
 
-	return {'geolink': tags, 'composite scores': comp_tags, 'image_results' : {'Image Privacy Score': image_score, 'District':district.item() % 10, 'City':pred_city}}
+	return {'geolink': tags, 'composite scores': comp_tags, 'image_results' : {'Image Privacy Score': image_score*100, 'District':district.item() % 10, 'City':pred_city}}
 
 def get_image_score(city_conf, district_conf, c=0.8):
 	if city_conf >= c:
@@ -202,7 +202,7 @@ def get_text_score(confidence, area, area_const=16.79*2): #16.79 is average size
 	if area == 0:
 		return confidence
 
-	return confidence*min(1, area/area_const)
+	return (1 - confidence)*min(1, area/area_const)
 
 def text_parser(listText):
 	listTokenSets = []

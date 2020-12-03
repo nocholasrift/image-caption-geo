@@ -57,6 +57,16 @@ $(document).ready(function(){
         return false;
 	});
 
+	function getColor(numb){
+		if(numb < 35){
+			return "red";
+		} 
+		if(numb < 70){
+			return "orange";
+		} 
+		return 'limegreen'
+	}
+
 	function displayOSMURI(response){
 		console.log("response received!");
 		$('.geoparsepy-spinner').hide();
@@ -70,22 +80,23 @@ $(document).ready(function(){
 
 			document.getElementById("geoparse-link-result").innerHTML ='<h2><b>Privacy Scores:</b></h2>';
 
-			let table = '<table style=\"width:100%\"><tr><th>Text Privacy</th><th>Image Privacy</th><th>Composite Privacy</th></tr><tr><td>'+ PrivacyScores['text'] + '</td><td>'+ PrivacyScores['image'] + '</td><td>'+ PrivacyScores['composite'] + '</td></tr></table>';
+			let table = '<table style=\"width:100%\"><tr><th>Text Privacy</th><th>Image Privacy</th><th>Composite Privacy</th></tr>'
+			table += '<tr><td style=\"color:'+ getColor(PrivacyScores['text']) +';\" >'+ PrivacyScores['text'] + '</td><td style=\"color:'+ getColor(PrivacyScores['image']) +';\" >'+ PrivacyScores['image'] + '</td><td style=\"color:'+ getColor(PrivacyScores['composite']) +';\">'+ PrivacyScores['composite'] + '</td></tr></table>';
 
-			document.getElementById("geoparse-link-result").innerHTML+=table;
+			document.getElementById("geoparse-link-result").innerHTML+=table + '<br>';
 
 			document.getElementById("geoparse-link-result").innerHTML+='<h3><b>Result Breakdown:</b></h3>';
 			document.getElementById("geoparse-link-result").innerHTML+='<b>Text Results</b>:';
 			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Privacy Score: '+ PrivacyScores['text']+'</li>';
 			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Predicted Location: '+response['geolink']['name']+'</li>';
 
-			document.getElementById("geoparse-link-result").innerHTML+='<br><br><b>Image Results</b>:';
+			document.getElementById("geoparse-link-result").innerHTML+='<br><b>Image Results</b>:';
 			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Privacy Score: '+ PrivacyScores['image']+'</li>';
 			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Predicted Location: '+response['image_results']['City']+ ', District ' +response['image_results']['District'] +'</li>';
 
-			document.getElementById("geoparse-link-result").innerHTML+='<br><br><b>Composite Results</b>:';
+			document.getElementById("geoparse-link-result").innerHTML+='<br><b>Composite Results</b>:';
 			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Privacy Score: '+ PrivacyScores['composite']+'</li>';
-			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Predicted Location: '+response['composite scores']['name']+'</li>';
+			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Predicted Location: '+response['composite scores']['name']+'</li><br>';
 
         	// window.open(response['geolink']);
 			var btn = document.createElement("BUTTON");
