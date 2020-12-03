@@ -63,23 +63,17 @@ $(document).ready(function(){
 		if(response != 0){
 			console.log("Loading up response now");
 
-			document.getElementById("geoparse-link-result").innerHTML='<b>Text was parsed</b>:';
-			
-			for (let k in response["geolink"]){
-				document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response['geolink'][k]+'</li>';
-			}
+			document.getElementById("geoparse-link-result").innerHTML='<b>Text Results:</b>:';
+			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Privacy Score: '+response['geolink']['Text Privacy Score']+'</li>';
+			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Predicted Location: '+response['geolink']['name']+'</li>';
 
-			document.getElementById("geoparse-link-result").innerHTML+='<br><br><b>Image Results</b>:';
+			document.getElementById("geoparse-link-result").innerHTML+='<br><br><b>Image Results:</b>:';
+			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Privacy Score: '+response['image_results']['Image Privacy Score']+'</li>';
+			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Predicted Location: '+response['image_results']['City']+ ', District ' +response['image_results']['District'] +'</li>';
 
-			for (let k in response['image_results']){
-				document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response['image_results'][k]+'</li>';
-			}
-
-			document.getElementById("geoparse-link-result").innerHTML+='<br><br><b>Composite Results</b>:';
-
-			for (let k in response['composite scores']){
-				document.getElementById("geoparse-link-result").innerHTML+='<br><li>'+k+': '+response['composite scores'][k]+'</li>';
-			}
+			document.getElementById("geoparse-link-result").innerHTML+='<br><br><b>Composite Results:</b>:';
+			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Privacy Score: '+response['composite scores']['Composite Privacy Score']+'</li>';
+			document.getElementById("geoparse-link-result").innerHTML+='<br><li>Predicted Location: '+response['composite scores']['name']+'</li>';
 
         	// window.open(response['geolink']);
 			var btn = document.createElement("BUTTON");

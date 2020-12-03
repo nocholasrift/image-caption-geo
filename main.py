@@ -172,8 +172,9 @@ def simple_demo():
 	pred_city = city_names[city.item()]
 
 	comp_listText = [
-		image_caption + " " + pred_city,
+		pred_city + " " + image_caption,
 	]
+	print(comp_listText)
 	comp_geolink, comp_max_confidence = text_parser(comp_listText)
 
 	comp_tags = {}
@@ -189,7 +190,10 @@ def simple_demo():
 
 	return {'geolink': tags, 'composite scores': comp_tags, 'image_results' : {'Image Privacy Score': image_score, 'District':district.item() % 10, 'City':pred_city}}
 
-def get_text_score(confidence, area, area_const=16.79): #16.79 is average size in pittsburgh
+def get_text_score(confidence, area, area_const=16.79*2): #16.79 is average size in pittsburgh
+	if area == 0:
+		return confidence
+
 	return confidence*min(1, area/area_const)
 
 def text_parser(listText):
@@ -390,14 +394,18 @@ def get_tags(url):
 
 	wikidata_key = tags['wikidata']
 
+
 	area = get_wikidata_area(wikidata_key)
 
 	return tags, area
 
 
 def get_wikidata_area(entity):
-	entity_dict = get_entity_dict_from_api(entity)
-	return float(entity_dict['claims']['P2046'][0]['mainsnak']['datavalue']['value']['amount'])
+	try:
+		entity_dict = get_entity_dict_from_api(entity)
+		return float(entity_dict['claims']['P2046'][0]['mainsnak']['datavalue']['value']['amount'])
+	except:
+		return 0
 
 
 def retrieve_image_from_file(file):
