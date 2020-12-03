@@ -4,6 +4,7 @@ $(document).ready(function(){
 	$('.geoparsepy-spinner').hide();
 
 	$('#loading-data-spinner').hide();
+	$('#uploadedImg').hide();
 
 
 	$("#form-text-upload").on("submit", function(e){
@@ -28,9 +29,13 @@ $(document).ready(function(){
 	  		$('#geoparse-link-result').empty();
 	  		$('#geoparse-link-result').showError(message);
 	  	} else {
+			$('#uploadedImg').show();
+			document.getElementById("image-caption").innerHTML=image_caption;
 	  		// Show the filename in the input box.
 			$("#file-upload").siblings(".custom-file-label-x").removeClass("form-control-placeholder").addClass("selected").html(fileName);
-
+			var reader = new FileReader();
+            reader.onload = displayUploadedImage;
+            reader.readAsDataURL(uploaded_file.files[0]);
 			// Clear any error messages and show loading bar.
 			document.getElementById("geoparse-link-result").innerHTML="";
 			$('.geoparsepy-spinner').show();
@@ -65,6 +70,10 @@ $(document).ready(function(){
 			return "orange";
 		} 
 		return 'limegreen'
+	}
+
+	function displayUploadedImage(e){
+		$('#uploadedImg').attr('src', e.target.result);
 	}
 
 	function displayOSMURI(response){
