@@ -286,11 +286,12 @@ def text_parser(listText):
 					break
 		listLocMatches = geoparsepy.geo_parse_lib.create_matched_location_list( listMatch, cached_locations, osmid_lookup )
 		confidences= geoparsepy.geo_parse_lib.calc_location_confidence( listLocMatches, dictGeospatialConfig, geom_context = strGeom, geom_cache = dictGeomResultsCache)
-		max_confidence = 0
-		size = len(confidences)
-		if size > 0:
-			max_confidence = max(confidences)
-			max_confidence = round(100*max_confidence/size, 2)
+
+		size, max_confidence = len(confidences), 0 if len(confidences) == 0 else max(confidences)
+
+		if max_confidence > 0:
+			max_confidence = .5 + .25*max_confidence / 100 + .25*max_confidence / 300
+
 		geoparsepy.geo_parse_lib.filter_matches_by_confidence( listLocMatches, dictGeospatialConfig, geom_context = strGeom, geom_cache = dictGeomResultsCache )
 		geoparsepy.geo_parse_lib.filter_matches_by_geom_area( listLocMatches, dictGeospatialConfig )
 		geoparsepy.geo_parse_lib.filter_matches_by_region_of_interest( listLocMatches, [-148838, -62149], dictGeospatialConfig )
