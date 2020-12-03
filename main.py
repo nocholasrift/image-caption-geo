@@ -141,7 +141,7 @@ def simple_demo():
 	]
 	geolink, max_confidence = text_parser(listText)
 
-	tags['Text Privacy Score'] = 1
+	tags['Text Privacy Score'] = 100
 
 	if geolink != "":
 		tags, area = get_tags(geolink)
@@ -185,7 +185,7 @@ def simple_demo():
 		print(comp_listText)
 		comp_geolink, comp_max_confidence = text_parser(comp_listText)
 
-		comp_tags['Text Privacy Score'] = 1
+		comp_tags['Text Privacy Score'] = 100
 		if comp_geolink != "":
 			comp_tags, comp_area = get_tags(comp_geolink)
 			comp_tags['geolink'] = comp_geolink
