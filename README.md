@@ -1,12 +1,14 @@
-# vislang.ai website
-Source code repository for our vision, language, and learning webpage hosted at vislang.ai
+# Image Caption Geolocalization Tool
+Source code repository for our vision, language tool.
+
+# Project Notebooks:
+These are found in the Project Notebooks Folder. There are notebooks to show the training and testing of the image model, and the set up of geoparsepy, the python library that is being used to parse text. The content provides a more thorough understanding of our technical process. 
 
 
 ## Overview
 This webpage is implemented using Flask, and is configured in the app.yaml file to run using Google App Engine.
-The app also contains two subroutines for searching the SBU dataset (sbu-explorer), and the COCO dataset (coco-explorer).
-These two subroutines use the Whoosh indexing library for fast text search. The code for indexing these datasets can be
-found in the scripts directory.
+
+main.py: The app includes the code for text parsing, and for predicting the location of the image. It also includes subroutines to calculate the scores described in the research paper. 
 
 ## Requirements
 - Setup a conda environment and install some prerequisite packages like this
