@@ -2,7 +2,7 @@
 Source code repository for our vision, language tool.
 
 # Project Notebooks:
-These are found in the Project Notebooks Folder. There are notebooks to show the training and testing of the image model, and the set up of geoparsepy, the python library that is being used to parse text. The content provides a more thorough understanding of our technical process. 
+These are found in the Project_Notebooks Folder. There are notebooks to show the training and testing of the image model, and the set up of geoparsepy, the python library that is being used to parse text. The content provides a more thorough understanding of our technical process. Inside the image model jupyter notebook, a package called [simple-hierarchy-pytorch](https://pypi.org/project/simple-hierarchy-pytorch/) is used for building one of the model architecture tested. This package is written by Rajiv Sarvepalli, one of the collaborators on this repository and project. 
 
 
 ## Overview
